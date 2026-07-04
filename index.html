@@ -1,0 +1,2649 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Hacking Game</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+      background:
+        radial-gradient(circle at 18% 30%, rgba(116,255,184,0.12), transparent 34%),
+        radial-gradient(circle at 82% 42%, rgba(116,255,184,0.09), transparent 34%),
+        linear-gradient(135deg, #071015 0%, #0b1519 48%, #071015 100%);
+      color: #f4fff9;
+      overflow: hidden;
+    }
+
+    button {
+      border: none;
+      font-family: inherit;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .page {
+      width: 100vw;
+      height: 100vh;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+
+    .outer-code {
+      position: absolute;
+      z-index: 1;
+      padding: 8px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(116,255,184,0.18);
+      background: rgba(6, 14, 18, 0.34);
+      color: rgba(190,255,222,0.46);
+      font-family: Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: 0.45px;
+      white-space: nowrap;
+      pointer-events: none;
+      text-shadow: 0 0 10px rgba(116,255,184,0.24);
+    }
+
+    .outer-code-1 {
+      top: 11%;
+      left: 7%;
+      animation: outerCodeFloat1 8s ease-in-out infinite;
+    }
+
+    .outer-code-2 {
+      top: 20%;
+      right: 7%;
+      animation: outerCodeFloat2 9s ease-in-out infinite;
+    }
+
+    .outer-code-3 {
+      bottom: 9%;
+      left: 10%;
+      animation: outerCodeFloat3 10s ease-in-out infinite;
+    }
+
+    @keyframes outerCodeFloat1 {
+      0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.42;
+      }
+      50% {
+        transform: translate(18px, 12px);
+        opacity: 0.7;
+      }
+    }
+
+    @keyframes outerCodeFloat2 {
+      0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.34;
+      }
+      50% {
+        transform: translate(-20px, 14px);
+        opacity: 0.62;
+      }
+    }
+
+    @keyframes outerCodeFloat3 {
+      0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.28;
+      }
+      50% {
+        transform: translate(20px, -14px);
+        opacity: 0.52;
+      }
+    }
+
+
+    .game-frame {
+      width: min(1240px, calc((100vh - 32px) * 16 / 9), calc(100vw - 32px));
+      height: min(700px, calc(100vh - 32px), calc((100vw - 32px) * 9 / 16));
+      border: 3px solid #74ffb8;
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(116, 255, 184, 0.08), rgba(0,0,0,0.08)),
+        #0b1117;
+      box-shadow:
+        0 0 0 6px rgba(116, 255, 184, 0.08),
+        0 0 38px rgba(116, 255, 184, 0.22),
+        0 28px 70px rgba(0,0,0,0.58);
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+
+
+    .page {
+      position: relative;
+      overflow: hidden;
+    }
+
+
+
+    .top-hud {
+      height: 68px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 22px;
+      padding: 0 24px;
+      border-bottom: 2px solid rgba(116, 255, 184, 0.24);
+      background: rgba(5, 10, 16, 0.8);
+    }
+
+    .game-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .game-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #74ffb8, #ffd166);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 0 20px rgba(116,255,184,0.45);
+      position: relative;
+    }
+
+    .shield-mark {
+      width: 20px;
+      height: 24px;
+      display: block;
+      background: #091015;
+      clip-path: polygon(50% 0%, 88% 14%, 82% 63%, 50% 100%, 18% 63%, 12% 14%);
+      position: relative;
+    }
+
+    .shield-mark::after {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 5px;
+      width: 4px;
+      height: 12px;
+      border-radius: 999px;
+      background: #74ffb8;
+      box-shadow: 0 0 0 3px rgba(116,255,184,0.22);
+    }
+
+    .title-text {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .game-title h1 {
+      font-size: 27px;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .game-title p {
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(116,255,184,0.18);
+      background: rgba(116,255,184,0.055);
+      font-size: 12px;
+      color: #bff7d9;
+      white-space: nowrap;
+      margin-top: 0;
+    }
+
+    .hud-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .coin-box,
+    .level-box {
+      padding: 9px 12px;
+      border: 1px solid rgba(116,255,184,0.3);
+      border-radius: 13px;
+      background: rgba(116,255,184,0.08);
+      font-weight: 800;
+      color: #dfffea;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .reset-btn,
+    .title-btn {
+      padding: 10px 13px;
+      border-radius: 13px;
+      color: #101820;
+      font-size: 12px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #ffd166, #74ffb8);
+    }
+
+    .title-btn {
+      background: linear-gradient(135deg, #74ffb8, #2bd4ff);
+    }
+
+    .start-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.7)),
+        radial-gradient(circle at center, rgba(116,255,184,0.18), transparent 48%),
+        #05080d;
+      overflow: hidden;
+    }
+
+    .start-screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 0%, rgba(116,255,184,0.06) 50%, transparent 100%),
+        repeating-linear-gradient(
+          180deg,
+          rgba(255,255,255,0.035) 0px,
+          rgba(255,255,255,0.035) 1px,
+          transparent 1px,
+          transparent 7px
+        );
+      opacity: 0.7;
+      animation: bgMove 7s linear infinite;
+      pointer-events: none;
+    }
+
+    .start-screen::after {
+      content: "";
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(116,255,184,0.2), transparent 62%);
+      animation: pulseOrb 3.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 0;
+      top: -20%;
+      width: 100%;
+      height: 90px;
+      background: linear-gradient(
+        180deg,
+        transparent,
+        rgba(116,255,184,0.12),
+        transparent
+      );
+      animation: scanDown 4.2s linear infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .floating-code {
+      position: absolute;
+      z-index: 2;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(116,255,184,0.22);
+      background: rgba(5,8,13,0.42);
+      color: rgba(170,255,211,0.58);
+      font-family: Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      pointer-events: none;
+      text-shadow: 0 0 12px rgba(116,255,184,0.35);
+    }
+
+    .code-a {
+      left: 8%;
+      top: 18%;
+      animation: floatCodeA 8s ease-in-out infinite;
+    }
+
+    .code-b {
+      right: 8%;
+      bottom: 22%;
+      animation: floatCodeB 9s ease-in-out infinite;
+    }
+
+    .code-c {
+      left: 12%;
+      bottom: 13%;
+      animation: floatCodeC 10s ease-in-out infinite;
+    }
+
+    @keyframes bgMove {
+      from {
+        background-position: 0 0, 0 0;
+      }
+      to {
+        background-position: 160px 0, 0 90px;
+      }
+    }
+
+    @keyframes pulseOrb {
+      0%, 100% {
+        transform: scale(0.92);
+        opacity: 0.45;
+      }
+      50% {
+        transform: scale(1.08);
+        opacity: 0.75;
+      }
+    }
+
+    @keyframes scanDown {
+      from {
+        transform: translateY(-120px);
+      }
+      to {
+        transform: translateY(760px);
+      }
+    }
+
+    @keyframes floatCodeA {
+      0%, 100% {
+        transform: translate(0, 0);
+      }
+      50% {
+        transform: translate(22px, 18px);
+      }
+    }
+
+    @keyframes floatCodeB {
+      0%, 100% {
+        transform: translate(0, 0);
+      }
+      50% {
+        transform: translate(-28px, -16px);
+      }
+    }
+
+    @keyframes floatCodeC {
+      0%, 100% {
+        transform: translate(0, 0);
+      }
+      50% {
+        transform: translate(18px, -22px);
+      }
+    }
+
+    @keyframes titleGlow {
+      0%, 100% {
+        text-shadow:
+          0 0 14px rgba(116,255,184,0.28),
+          0 0 28px rgba(116,255,184,0.28);
+      }
+      50% {
+        text-shadow:
+          0 0 20px rgba(116,255,184,0.56),
+          0 0 44px rgba(255,209,102,0.3);
+      }
+    }
+
+    @keyframes buttonShine {
+      from {
+        transform: translateX(-120%) skewX(-20deg);
+      }
+      to {
+        transform: translateX(220%) skewX(-20deg);
+      }
+    }
+
+    @keyframes cardPulse {
+      0%, 100% {
+        box-shadow: 0 18px 40px rgba(0,0,0,0.34);
+      }
+      50% {
+        box-shadow:
+          0 0 12px rgba(116,255,184,0.08),
+          0 18px 40px rgba(0,0,0,0.34);
+      }
+    }
+
+
+    .start-screen.hidden {
+      display: none;
+    }
+
+    .start-card {
+      width: min(650px, 86%);
+      text-align: center;
+      padding: 42px 38px;
+      border-radius: 30px;
+      border: 2px solid rgba(116,255,184,0.38);
+      background:
+        linear-gradient(135deg, rgba(116,255,184,0.12), rgba(255,209,102,0.08)),
+        rgba(8, 14, 20, 0.92);
+      box-shadow: 0 0 50px rgba(116,255,184,0.22);
+      position: relative;
+      z-index: 3;
+      overflow: hidden;
+    }
+
+    .start-card::before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.08);
+      pointer-events: none;
+    }
+
+    .start-card .small {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      background: rgba(255,209,102,0.15);
+      border: 1px solid rgba(255,209,102,0.32);
+      color: #ffe3a2;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .start-card h2 {
+      font-size: 50px;
+      line-height: 1.05;
+      margin-bottom: 18px;
+      color: #ffffff;
+      animation: titleGlow 2.8s ease-in-out infinite;
+    }
+
+    .start-desc {
+      color: #ccebdd;
+      line-height: 1.65;
+      font-size: 15px;
+      margin-bottom: 26px;
+    }
+
+    .start-desc span {
+      display: block;
+      white-space: nowrap;
+    }
+
+    .start-btn {
+      padding: 16px 38px;
+      border-radius: 18px;
+      color: #091015;
+      font-size: 17px;
+      font-weight: 1000;
+      background: linear-gradient(135deg, #74ffb8, #ffd166);
+      box-shadow: 0 12px 30px rgba(116,255,184,0.24);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .start-btn::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 34%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+      animation: buttonShine 2.3s ease-in-out infinite;
+    }
+
+    .start-btn:hover,
+    .reset-btn:hover,
+    .title-btn:hover,
+    .stage-btn:hover,
+    .submit-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .game-screen {
+      height: calc(100% - 68px);
+      display: grid;
+      grid-template-columns: 250px 1fr 330px;
+      min-height: 0;
+      background:
+        linear-gradient(90deg,
+          rgba(116,255,184,0.035) 0%,
+          rgba(255,255,255,0.01) 46%,
+          rgba(116,255,184,0.035) 100%
+        );
+    }
+
+    .left-panel,
+    .right-panel {
+      min-height: 0;
+      padding: 18px;
+      background: rgba(6, 12, 18, 0.68);
+      border-right: 2px solid rgba(116,255,184,0.18);
+      overflow: hidden;
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding-top: 18px;
+      padding-bottom: 18px;
+    }
+
+    .left-stack {
+      width: 100%;
+      max-width: 214px;
+      display: grid;
+      gap: 18px;
+      transform: none;
+      margin: 0 auto;
+    }
+
+    .right-panel {
+      border-right: none;
+      border-left: 2px solid rgba(116,255,184,0.18);
+      background:
+        radial-gradient(circle at 55% 38%, rgba(116,255,184,0.07), transparent 48%),
+        rgba(6, 12, 18, 0.68);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0;
+      color: #ffffff;
+      font-size: 18px;
+      letter-spacing: -0.2px;
+    }
+
+    .player-card {
+      width: 100%;
+      padding: 15px;
+      border-radius: 18px;
+      background: rgba(116,255,184,0.08);
+      border: 1px solid rgba(116,255,184,0.22);
+      margin-bottom: 0;
+    }
+
+    .player-avatar {
+      width: 62px;
+      height: 62px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #74ffb8, #2bd4ff);
+      color: #091015;
+      font-size: 31px;
+      margin-bottom: 12px;
+    }
+
+    .player-card h3 {
+      font-size: 17px;
+      margin-bottom: 7px;
+    }
+
+    .player-card p {
+      color: #bcebd4;
+      line-height: 1.5;
+      font-size: 12px;
+    }
+
+    .rule-list {
+      width: 100%;
+      display: grid;
+      gap: 8px;
+    }
+
+    .rule-item {
+      padding: 10px;
+      border-radius: 13px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #d7f9e8;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+
+
+
+    .hint-card {
+      width: 100%;
+      padding: 12px;
+      border-radius: 15px;
+      background:
+        linear-gradient(135deg, rgba(255,209,102,0.08), rgba(116,255,184,0.055)),
+        rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,209,102,0.22);
+      box-shadow: inset 0 0 16px rgba(255,209,102,0.035);
+    }
+
+    .hint-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .hint-head span {
+      color: #fff0a8;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .hint-btn {
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: #091015;
+      background: linear-gradient(135deg, #ffd166, #74ffb8);
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .hint-text {
+      color: #f1ffe9;
+      font-size: 11.5px;
+      line-height: 1.5;
+      word-break: keep-all;
+    }
+
+    .hint-text.closed {
+      display: none;
+    }
+
+
+    .player-card p,
+    .rule-item,
+    .stage p,
+    .mission-content .desc,
+    .question,
+    .hint-text {
+      word-break: keep-all;
+      overflow-wrap: normal;
+    }
+
+    .stage p {
+      min-height: 58px;
+    }
+
+    .question {
+      line-height: 1.7;
+    }
+
+    .map-area {
+      position: relative;
+      padding: 24px 22px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, #0b1418 0%, #081014 58%, #070c10 100%);
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .map-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .map-title h2 {
+      color: #ffffff;
+      font-size: 24px;
+    }
+
+    .map-title span {
+      color: #aeeed0;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      opacity: 0.9;
+    }
+
+    .road {
+      display: none;
+    }
+
+    .stage-row {
+      position: relative;
+      height: calc(100% - 52px);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      align-items: center;
+      gap: 18px;
+      z-index: 2;
+      min-height: 0;
+      padding-top: 0;
+      transform: translateY(-18px);
+    }
+
+    .stage {
+      height: min(330px, 92%);
+      border-radius: 24px;
+      padding: 18px;
+      background: rgba(8, 15, 22, 0.88);
+      border: 2px solid rgba(116,255,184,0.23);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.34);
+      position: relative;
+      overflow: hidden;
+      animation: none;
+      transition: 0.22s ease;
+    }
+
+    .stage:hover {
+      transform: translateY(-6px);
+      border-color: rgba(116,255,184,0.55);
+    }
+
+    .stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(145deg, rgba(116,255,184,0.09), transparent 46%, rgba(255,209,102,0.08));
+      pointer-events: none;
+    }
+
+    .stage.locked {
+      opacity: 0.58;
+      filter: grayscale(0.32);
+    }
+
+    .stage.clear {
+      border-color: rgba(255,209,102,0.72);
+      box-shadow: 0 0 28px rgba(255,209,102,0.17);
+    }
+
+
+    .stage.active {
+      border-color: rgba(116,255,184,0.62);
+      box-shadow:
+        0 0 22px rgba(116,255,184,0.14),
+        0 18px 40px rgba(0,0,0,0.34);
+    }
+
+    .stage.active .stage-badge {
+      background: linear-gradient(135deg, #74ffb8, #b7ffe1);
+      box-shadow: 0 0 18px rgba(116,255,184,0.44);
+    }
+
+    .stage.active .stage-status {
+      color: #74ffb8;
+      text-shadow: 0 0 10px rgba(116,255,184,0.28);
+    }
+
+    .stage.active .stage-btn {
+      box-shadow: 0 0 18px rgba(116,255,184,0.18);
+    }
+
+
+    .stage-content {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stage-badge {
+      width: fit-content;
+      display: inline-block;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: #74ffb8;
+      color: #091015;
+      font-size: 12px;
+      font-weight: 1000;
+      margin-bottom: 14px;
+    }
+
+    .stage h3 {
+      font-size: 21px;
+      margin-bottom: 10px;
+      color: #ffffff;
+    }
+
+    .stage p {
+      color: #c9f4df;
+      font-size: 13px;
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+
+    .stage-type {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin-bottom: 13px;
+    }
+
+    .tag {
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #e9fff3;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .stage-status {
+      margin-top: auto;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffd166;
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .stage-btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 14px;
+      color: #091015;
+      font-size: 12px;
+      font-weight: 1000;
+      background: linear-gradient(135deg, #74ffb8, #ffd166);
+    }
+
+    .stage-btn:disabled {
+      cursor: not-allowed;
+      color: #839088;
+      background: rgba(255,255,255,0.13);
+      transform: none;
+    }
+
+    .mission-box {
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 0;
+    }
+
+    .mission-content {
+      width: 100%;
+      min-height: 0;
+      padding: 18px;
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, rgba(116,255,184,0.09), rgba(255,255,255,0.035)),
+        rgba(9, 18, 20, 0.78);
+      border: 1px solid rgba(116,255,184,0.22);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 22px rgba(116,255,184,0.06);
+    }
+
+    .mission-content > h3 {
+      font-size: 21px;
+      color: #ffffff;
+      margin-bottom: 10px;
+      flex: 0 0 auto;
+    }
+
+
+    .mission-card-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 13px;
+      border-bottom: 1px solid rgba(116,255,184,0.16);
+    }
+
+    .mission-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(116,255,184,0.12);
+      border: 1px solid rgba(116,255,184,0.2);
+      font-size: 19px;
+    }
+
+    .mission-card-head p {
+      margin-bottom: 3px;
+      color: #aef2c6;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+    }
+
+    .mission-card-head h3 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 21px;
+      letter-spacing: -0.3px;
+    }
+
+    .mission-content .desc {
+      color: #c9f4df;
+      font-size: 13px;
+      line-height: 1.55;
+      margin-bottom: 14px;
+      flex: 0 0 auto;
+    }
+
+    .quiz-area {
+      display: none;
+      flex: 0 0 auto;
+    }
+
+    .quiz-area.active {
+      display: block;
+    }
+
+    .question {
+      padding: 14px 15px;
+      border-radius: 15px;
+      background: rgba(8, 18, 20, 0.78);
+      border: 1px solid rgba(116,255,184,0.12);
+      line-height: 1.68;
+      color: #f6fff9;
+      font-weight: 700;
+      margin-bottom: 12px;
+      font-size: 13.2px;
+      letter-spacing: -0.25px;
+      word-break: keep-all;
+      box-shadow: none;
+    }
+
+    .option-list {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .option {
+      text-align: left;
+      padding: 11px 12px;
+      border-radius: 12px;
+      color: #f2fff8;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      line-height: 1.35;
+      font-size: 12px;
+    }
+
+
+    .option {
+      word-break: keep-all;
+      overflow-wrap: normal;
+    }
+
+    .option:hover {
+      background: rgba(116,255,184,0.12);
+    }
+
+    .option.selected {
+      outline: 2px solid #74ffb8;
+      background: rgba(116,255,184,0.16);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 13px;
+      color: #091015;
+      font-size: 12px;
+      font-weight: 1000;
+      background: linear-gradient(135deg, #ffd166, #74ffb8);
+    }
+
+    .message {
+      flex: 0 0 auto;
+      min-height: 42px;
+      margin-top: 12px;
+      padding: 11px;
+      border-radius: 13px;
+      background: rgba(0,0,0,0.18);
+      color: #c9f4df;
+      font-size: 12px;
+      line-height: 1.45;
+      overflow: hidden;
+    }
+
+    .message.success {
+      color: #74ffb8;
+      font-weight: 900;
+    }
+
+    .message.fail {
+      color: #ff9f9f;
+      font-weight: 900;
+    }
+
+    .wargame-placeholder {
+      display: none;
+      padding: 15px;
+      border-radius: 16px;
+      background: #05080d;
+      border: 1px solid rgba(116,255,184,0.22);
+      color: #9fffd0;
+      font-family: Consolas, monospace;
+      line-height: 1.7;
+      font-size: 12px;
+    }
+
+    .wargame-placeholder.active {
+      display: block;
+    }
+
+    .flag-input {
+      width: 100%;
+      margin-top: 13px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(116,255,184,0.25);
+      background: rgba(255,255,255,0.06);
+      color: #eafff4;
+      font-family: Consolas, monospace;
+      outline: none;
+      font-size: 12px;
+    }
+
+    .flag-input:disabled {
+      opacity: 0.55;
+    }
+
+
+    .game-frame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      background:
+        linear-gradient(90deg, transparent, rgba(116,255,184,0.12), transparent);
+      transform: translateX(-120%);
+      animation: frameLight 5.5s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .top-hud,
+    .game-screen {
+      position: relative;
+      z-index: 2;
+    }
+
+    .top-hud::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -2px;
+      width: 34%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #74ffb8, #ffd166, transparent);
+      animation: hudLine 3.2s linear infinite;
+    }
+
+    .map-area::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(116,255,184,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(116,255,184,0.02) 1px, transparent 1px);
+      background-size: 42px 42px;
+      opacity: 0.45;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .map-area::after {
+      display: none;
+    }
+
+    .map-title,
+    .stage-row {
+      position: relative;
+      z-index: 3;
+    }
+
+    .map-title h2 {
+      text-shadow:
+        0 0 12px rgba(116,255,184,0.25),
+        0 0 22px rgba(116,255,184,0.18);
+    }
+
+    .map-title span {
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(116,255,184,0.22);
+      background: rgba(116,255,184,0.07);
+      box-shadow: 0 0 18px rgba(116,255,184,0.08);
+    }
+
+    .map-glow,
+    .glow-one,
+    .glow-two {
+      display: none;
+    }
+
+    .map-code {
+      display: none;
+    }
+
+    .stage {
+      backdrop-filter: blur(8px);
+    }
+
+    .stage::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -80%;
+      width: 45%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,0.11),
+        transparent
+      );
+      transform: skewX(-18deg);
+      animation: stageShine 4.5s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .stage:nth-child(2)::before {
+      animation-delay: 0.7s;
+    }
+
+    .stage:nth-child(3)::before {
+      animation-delay: 1.4s;
+    }
+
+    .stage-badge {
+      box-shadow: 0 0 16px rgba(116,255,184,0.35);
+      animation: badgePulse 2.2s ease-in-out infinite;
+    }
+
+    .stage-status {
+      text-shadow: 0 0 10px rgba(255,209,102,0.25);
+    }
+
+    .stage-btn,
+    .submit-btn,
+    .reset-btn,
+    .title-btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stage-btn::after,
+    .submit-btn::after,
+    .reset-btn::after,
+    .title-btn::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.32), transparent);
+      transform: translateX(-130%) skewX(-18deg);
+      animation: buttonSweep 3.1s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .mission-content {
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        inset 0 0 24px rgba(116,255,184,0.05),
+        0 0 18px rgba(116,255,184,0.06);
+    }
+
+    .mission-content::before {
+      display: none;
+    }
+
+    .mission-status-bar {
+      display: none;
+    }
+
+    .mission-content h3,
+    .mission-content .desc,
+    .quiz-area,
+    .wargame-placeholder,
+    .message {
+      position: relative;
+      z-index: 2;
+    }
+
+    .question {
+      box-shadow: inset 0 0 18px rgba(116,255,184,0.04);
+    }
+
+    .option {
+      transition: 0.2s ease;
+    }
+
+    .option:hover {
+      transform: translateX(4px);
+      border-color: rgba(116,255,184,0.35);
+    }
+
+    @keyframes frameLight {
+      0%, 55%, 100% {
+        transform: translateX(-120%);
+        opacity: 0;
+      }
+      68% {
+        opacity: 1;
+      }
+      88% {
+        transform: translateX(120%);
+        opacity: 0;
+      }
+    }
+
+    @keyframes hudLine {
+      from {
+        transform: translateX(-120%);
+      }
+      to {
+        transform: translateX(340%);
+      }
+    }
+
+    @keyframes glowFloatOne {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+      }
+      50% {
+        transform: translate(34px, 16px) scale(1.08);
+      }
+    }
+
+    @keyframes glowFloatTwo {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+      }
+      50% {
+        transform: translate(-28px, -22px) scale(1.1);
+      }
+    }
+
+    @keyframes stageShine {
+      0%, 45%, 100% {
+        left: -80%;
+        opacity: 0;
+      }
+      58% {
+        opacity: 1;
+      }
+      82% {
+        left: 135%;
+        opacity: 0;
+      }
+    }
+
+    @keyframes badgePulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes buttonSweep {
+      0%, 55%, 100% {
+        transform: translateX(-130%) skewX(-18deg);
+      }
+      76% {
+        transform: translateX(130%) skewX(-18deg);
+      }
+    }
+
+    @keyframes statusBlink {
+      0%, 100% {
+        opacity: 0.35;
+        transform: scale(0.85);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+
+
+    .start-screen {
+      position: absolute !important;
+      inset: 0 !important;
+      z-index: 20 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .start-screen.hidden {
+      display: none !important;
+    }
+
+
+    @media (max-height: 720px) {
+      .page {
+        padding: 10px;
+      }
+
+      .game-frame {
+        width: min(1200px, calc((100vh - 20px) * 16 / 9), calc(100vw - 20px));
+        height: min(675px, calc(100vh - 20px), calc((100vw - 20px) * 9 / 16));
+      }
+
+      .top-hud {
+        height: 62px;
+        padding: 0 20px;
+      }
+
+      .game-title h1 {
+        font-size: 24px;
+      }
+
+      .title-text {
+        gap: 12px;
+      }
+
+      .game-title p {
+        font-size: 11px;
+        padding: 6px 10px;
+      }
+
+      .game-icon {
+        width: 38px;
+        height: 38px;
+      }
+
+      .game-screen {
+        height: calc(100% - 62px);
+        grid-template-columns: 230px 1fr 310px;
+      }
+
+      .left-panel,
+      .right-panel {
+        padding: 15px;
+      }
+
+      .left-panel {
+        display: flex;
+        justify-content: center;
+        padding-top: 15px;
+        padding-bottom: 15px;
+      }
+
+      .left-stack {
+        gap: 16px;
+        transform: none;
+        margin: 0 auto;
+      }
+
+      .mission-box {
+        padding-top: 0;
+      }
+
+      .map-area {
+        padding: 20px 18px;
+      }
+
+      .stage {
+        height: min(300px, 92%);
+        padding: 15px;
+      }
+
+      .stage-row {
+        transform: translateY(-10px);
+      }
+
+      .stage h3 {
+        font-size: 19px;
+      }
+
+      .stage p,
+      .mission-content .desc,
+      .rule-item,
+      .player-card p {
+        font-size: 11.5px;
+      }
+
+      .question {
+        font-size: 12.2px;
+        line-height: 1.62;
+      }
+
+      .player-avatar {
+        width: 54px;
+        height: 54px;
+        font-size: 27px;
+      }
+
+      .mission-content {
+        padding: 15px;
+      }
+
+      .option {
+        padding: 9px 10px;
+      }
+
+      .submit-btn,
+      .stage-btn {
+        padding: 11px;
+      }
+    }
+
+    @media (max-width: 950px) {
+      body {
+        overflow: auto;
+      }
+
+      .page {
+        height: auto;
+        min-height: 100vh;
+        align-items: flex-start;
+      }
+
+      .game-frame {
+        width: calc(100vw - 24px);
+        height: auto;
+        min-height: 680px;
+      }
+
+      .game-screen {
+        height: auto;
+        grid-template-columns: 1fr;
+      }
+
+      .left-panel,
+      .right-panel {
+        border: none;
+        border-bottom: 2px solid rgba(116,255,184,0.18);
+      }
+
+      .left-panel {
+        display: block;
+        padding-top: 22px;
+      }
+
+      .left-stack {
+        gap: 12px;
+        transform: none;
+        margin: 0 auto;
+      }
+
+      .mission-box {
+        padding-top: 0;
+      }
+
+      .stage-row {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+
+      .stage {
+        height: auto;
+      }
+
+      .road {
+        display: none;
+      }
+
+      .top-hud {
+        height: auto;
+        padding: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .title-text {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 7px;
+      }
+
+      .game-title p {
+        white-space: normal;
+      }
+
+      .hud-right {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .mission-content {
+        min-height: 420px;
+      }
+
+      .start-card h2 {
+        font-size: 40px;
+      }
+
+      .start-desc span {
+        white-space: normal;
+      }
+
+      .floating-code {
+        display: none;
+      }
+    }
+
+    /* LV.4 확장 + 워게임 카드 디자인 */
+    body {
+      overflow: auto;
+    }
+
+    .game-frame {
+      width: min(1240px, calc((100vh - 28px) * 16 / 9), calc(100vw - 28px));
+      height: min(700px, calc(100vh - 28px), calc((100vw - 28px) * 9 / 16));
+    }
+
+    .game-screen {
+      grid-template-columns: 235px minmax(0, 1fr) 330px;
+    }
+
+    .left-panel,
+    .right-panel {
+      padding: 16px;
+    }
+
+    .stage-row {
+      height: calc(100% - 50px);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+      gap: 14px;
+      transform: none;
+    }
+
+    .stage {
+      height: auto;
+      min-height: 0;
+      padding: 14px;
+      border-radius: 21px;
+    }
+
+    .stage-badge {
+      margin-bottom: 9px;
+      padding: 6px 10px;
+    }
+
+    .stage h3 {
+      font-size: 18px;
+      margin-bottom: 7px;
+    }
+
+    .stage p {
+      min-height: 42px;
+      font-size: 11.5px;
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+
+    .stage-type {
+      margin-bottom: 8px;
+    }
+
+    .tag {
+      padding: 5px 8px;
+      font-size: 10px;
+    }
+
+    .stage-status {
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .stage-btn {
+      padding: 10px;
+      border-radius: 13px;
+      font-size: 11px;
+    }
+
+    .mission-content {
+      padding: 16px;
+      border-radius: 20px;
+    }
+
+    .mission-card-head {
+      margin-bottom: 12px;
+      padding-bottom: 11px;
+    }
+
+    .mission-card-head h3 {
+      font-size: 19px;
+    }
+
+    .mission-content .desc {
+      font-size: 12.5px;
+      margin-bottom: 11px;
+    }
+
+    .wargame-placeholder.active {
+      display: grid;
+      gap: 10px;
+      max-height: 340px;
+      overflow-y: auto;
+      padding: 0 3px 0 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font-family: inherit;
+      line-height: normal;
+    }
+
+    .wg-card {
+      padding: 13px;
+      border-radius: 17px;
+      border: 1px solid rgba(116,255,184,0.24);
+      background:
+        linear-gradient(135deg, rgba(116,255,184,0.085), rgba(255,209,102,0.045)),
+        rgba(5, 10, 15, 0.78);
+      box-shadow: inset 0 0 18px rgba(116,255,184,0.045);
+    }
+
+    .wg-kicker {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(116,255,184,0.25);
+      background: rgba(116,255,184,0.09);
+      color: #b7ffe1;
+      font-size: 10px;
+      font-weight: 1000;
+      letter-spacing: 0.75px;
+    }
+
+    .wg-card h4 {
+      margin: 0 0 8px;
+      color: #ffffff;
+      font-size: 15px;
+      line-height: 1.35;
+      word-break: keep-all;
+    }
+
+    .wg-card p {
+      margin: 0;
+      color: #c9f4df;
+      font-size: 11.5px;
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+
+    .wg-console,
+    .wg-status {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 13px;
+      background: rgba(0,0,0,0.24);
+      border: 1px solid rgba(116,255,184,0.16);
+      display: grid;
+      gap: 6px;
+    }
+
+    .wg-row {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+      color: #dfffea;
+      font-family: Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+
+    .wg-row span:first-child {
+      color: #fff0a8;
+      font-weight: 900;
+    }
+
+    .wg-row code {
+      color: #b7ffe1;
+      font-family: Consolas, monospace;
+    }
+
+    .wg-command,
+    .token-box {
+      margin-top: 9px;
+      padding: 10px;
+      border-radius: 13px;
+      background: rgba(0,0,0,0.24);
+      border: 1px dashed rgba(116,255,184,0.24);
+      color: #b7ffe1;
+      font-family: Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.55;
+      word-break: break-all;
+    }
+
+    .wg-form {
+      display: grid;
+      gap: 8px;
+      padding: 11px;
+      border-radius: 15px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .wg-label {
+      color: #aef2c6;
+      font-size: 10.5px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+
+    .flag-input {
+      margin-top: 0;
+    }
+
+    .wg-btn {
+      width: 100%;
+      margin-top: 0;
+      padding: 12px;
+      border-radius: 13px;
+      color: #091015;
+      font-size: 12px;
+      font-weight: 1000;
+      background: linear-gradient(135deg, #74ffb8, #ffd166);
+    }
+
+    .wg-flag {
+      padding: 9px 10px;
+      border-radius: 13px;
+      background: rgba(116,255,184,0.1);
+      border: 1px solid rgba(116,255,184,0.26);
+      color: #74ffb8;
+      font-family: Consolas, monospace;
+      font-size: 11.5px;
+      font-weight: 900;
+      line-height: 1.5;
+      word-break: break-all;
+    }
+
+    .url-preview {
+      color: #ffe3a2;
+      font-family: Consolas, monospace;
+      font-size: 11px;
+      word-break: break-all;
+    }
+
+    @media (max-height: 720px) {
+      .game-screen {
+        grid-template-columns: 220px minmax(0, 1fr) 315px;
+      }
+
+      .stage h3 {
+        font-size: 17px;
+      }
+
+      .stage p {
+        font-size: 11px;
+        min-height: 38px;
+      }
+
+      .wargame-placeholder.active {
+        max-height: 315px;
+      }
+    }
+
+    @media (max-width: 950px) {
+      .stage-row {
+        grid-template-columns: 1fr;
+        grid-template-rows: none;
+      }
+    }
+
+
+
+    .wg-status {
+      display: block;
+      color: #ffe3a2;
+      font-size: 11.5px;
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+
+
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <div class="outer-code outer-code-1">ACCESS · WEB · QUEST · FLAG</div>
+    <div class="outer-code outer-code-2">XSS · SQLI · CSRF · WARGAME</div>
+    <div class="outer-code outer-code-3">&lt;/&gt; SYSTEM READY · START GAME</div>
+                        <section class="game-frame">
+      <div class="start-screen" id="startScreen">
+        <div class="scan-line"></div>
+        <div class="floating-code code-a">0101  XSS  SQL  FLAG  CSRF  0101</div>
+        <div class="floating-code code-b">&lt;script&gt; quest.clear(); &lt;/script&gt;</div>
+        <div class="floating-code code-c">ACCESS CHECK · LEVEL UNLOCKED · FLAG</div>
+        <div class="start-card">
+          <span class="small">WEB SECURITY ARCADE</span>
+          <h2>Web Hacking Game</h2>
+          <p class="start-desc">
+            <span>개념 문제와 워게임을 단계별로 해결하는 웹해킹 게임입니다.</span>
+            <span>START GAME을 누르면 LV.1부터 도전할 수 있습니다.</span>
+          </p>
+          <button class="start-btn" onclick="startGame()">START GAME</button>
+        </div>
+      </div>
+
+      <header class="top-hud">
+        <div class="game-title">
+          <div class="game-icon">
+            <span class="shield-mark"></span>
+          </div>
+          <div class="title-text">
+            <h1>Web Hacking Game</h1>
+            <p>LV.1 Quiz → LV.2 Storage → LV.3 URL Key → LV.4 Decode</p>
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <div class="level-box" id="currentHud">CURRENT : LV.1</div>
+          <div class="coin-box" id="clearHud">CLEAR : 0 / 4</div>
+          <button class="title-btn" onclick="goTitle()">TITLE</button>
+          <button class="reset-btn" onclick="resetGame()">RESET</button>
+        </div>
+      </header>
+
+      <section class="game-screen">
+        <aside class="left-panel">
+          <div class="left-stack">
+            <div class="player-card">
+              <div class="player-avatar">🕹️</div>
+              <h3>PLAYER</h3>
+              <p>
+                LV.1부터 LV.4까지<br />
+                순서대로 도전합니다.
+              </p>
+            </div>
+
+            <h2 class="panel-title">🎮 진행 방식</h2>
+            <div class="rule-list">
+              <div class="rule-item">1. START GAME으로 시작합니다.</div>
+              <div class="rule-item">2. 클리어하면 다음 레벨이 열립니다.</div>
+              <div class="rule-item">3. URL, 저장소, 인코딩 단서를 활용합니다.</div>
+            </div>
+
+            <div class="hint-card" id="hintCard">
+              <div class="hint-head">
+                <span>💡 힌트</span>
+                <button class="hint-btn" id="hintBtn" onclick="toggleHint()">힌트 보기</button>
+              </div>
+              <p class="hint-text closed" id="hintText">
+                현재 레벨에 맞는 힌트가 표시됩니다.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <section class="map-area">
+          <div class="map-title">
+            <h2>Stage Road</h2>
+            <span>레벨을 클리어하면 다음 단계가 열립니다</span>
+          </div>
+
+          <div class="stage-row">
+            <article class="stage" id="stage1">
+              <div class="stage-content">
+                <span class="stage-badge">LV.1</span>
+                <h3>개념 문제</h3>
+                <p>
+                  웹해킹 기본 개념을<br />
+                  확인합니다.
+                </p>
+                <div class="stage-type">
+                  <span class="tag">Concept</span>
+                  <span class="tag">Quiz</span>
+                </div>
+                <div class="stage-status" id="status1">● OPEN</div>
+                <button class="stage-btn" id="stageBtn1" onclick="selectStage(1)">PLAY LV.1</button>
+              </div>
+            </article>
+
+            <article class="stage locked" id="stage2">
+              <div class="stage-content">
+                <span class="stage-badge">LV.2</span>
+                <h3>권한 저장소</h3>
+                <p>
+                  Local Storage의<br />
+                  role 값을 조작합니다.
+                </p>
+                <div class="stage-type">
+                  <span class="tag">Storage</span>
+                  <span class="tag">Auth</span>
+                </div>
+                <div class="stage-status" id="status2">● LOCKED</div>
+                <button class="stage-btn" id="stageBtn2" onclick="selectStage(2)" disabled>LOCKED</button>
+              </div>
+            </article>
+
+            <article class="stage locked" id="stage3">
+              <div class="stage-content">
+                <span class="stage-badge">LV.3</span>
+                <h3>URL 키</h3>
+                <p>
+                  URL 파라미터를<br />
+                  조작해 문을 엽니다.
+                </p>
+                <div class="stage-type">
+                  <span class="tag">URL</span>
+                  <span class="tag">Parameter</span>
+                </div>
+                <div class="stage-status" id="status3">● LOCKED</div>
+                <button class="stage-btn" id="stageBtn3" onclick="selectStage(3)" disabled>LOCKED</button>
+              </div>
+            </article>
+
+            <article class="stage locked" id="stage4">
+              <div class="stage-content">
+                <span class="stage-badge">LV.4</span>
+                <h3>백업 로그</h3>
+                <p>
+                  인코딩된 토큰에서<br />
+                  FLAG를 복구합니다.
+                </p>
+                <div class="stage-type">
+                  <span class="tag">Base64</span>
+                  <span class="tag">Decode</span>
+                </div>
+                <div class="stage-status" id="status4">● LOCKED</div>
+                <button class="stage-btn" id="stageBtn4" onclick="selectStage(4)" disabled>LOCKED</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <aside class="right-panel">
+          <div class="mission-box">
+            <div class="mission-content">
+              <div class="mission-card-head">
+                <span class="mission-icon">📝</span>
+                <div>
+                  <p>문제 풀이</p>
+                  <h3 id="missionTitle">LV.1 개념 문제</h3>
+                </div>
+              </div>
+              <p class="desc" id="missionDesc">
+                객관식 문제를 풀면 LV.1이 클리어되고, LV.2 워게임 스테이지가 열립니다.
+              </p>
+
+              <div class="quiz-area active" id="quizArea">
+                <div class="question">
+                  사용자 입력을 검증 없이 출력할 때 발생할 수 있는 취약점은?
+                </div>
+
+                <div class="option-list" id="optionList">
+                  <button class="option" onclick="chooseOption(0, this)">XSS</button>
+                  <button class="option" onclick="chooseOption(1, this)">CSRF</button>
+                  <button class="option" onclick="chooseOption(2, this)">SQL Injection</button>
+                  <button class="option" onclick="chooseOption(3, this)">Command Injection</button>
+                </div>
+
+                <button class="submit-btn" onclick="submitQuiz()">SUBMIT ANSWER</button>
+              </div>
+
+              <div class="wargame-placeholder" id="wargameArea"></div>
+
+              <div class="message" id="message">
+                LV.1 문제를 먼저 풀어주세요.
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    let currentStage = 1;
+    let selectedAnswer = null;
+
+    const TOTAL_STAGES = 4;
+    const PROGRESS_KEY = "webHackingGameProgressLv4UrlParam";
+    const LAST_STAGE_KEY = "webHackingGameLastStageLv4";
+    const GAME_STARTED_KEY = "webHackingGameStartedLv4";
+    const STORAGE_ROLE_KEY = "neonGateRole";
+    const LEVEL2_FLAG = "FLAG{local_storage_admin}";
+    const LEVEL3_FLAG = "FLAG{url_parameter_success}";
+    const LEVEL4_TOKEN = "RkxBR3tiYXNlNjRfYmFja3VwX2xvZ30=";
+    const LEVEL4_FLAG = "FLAG{base64_backup_log}";
+
+    const hints = {
+      1: "사용자의 입력값이 화면에 출력될 때, 브라우저가 그 값을 어떻게 해석하는지 생각해보세요.",
+      2: "F12 → Application → Local Storage에서 neonGateRole 값을 admin으로 바꾼 뒤 CHECK ADMIN ROLE을 누르세요. FLAG는 팝업과 Console에서 확인합니다.",
+      3: "주소창 뒤에 ?key=admin을 붙이거나 URL 입력칸에 ?key=admin을 넣은 뒤 CHECK URL KEY를 누르세요.",
+      4: "Base64는 암호화가 아니라 인코딩입니다. Console에서 atob(토큰)을 실행해보세요."
+    };
+
+    let progress = {
+      1: false,
+      2: false,
+      3: false,
+      4: false
+    };
+
+    try {
+      const savedProgress = localStorage.getItem(PROGRESS_KEY);
+      if (savedProgress) {
+        progress = { ...progress, ...JSON.parse(savedProgress) };
+      }
+    } catch (error) {
+      progress = { 1: false, 2: false, 3: false, 4: false };
+    }
+
+    let hintOpen = false;
+    let level2FlagShown = false;
+    let level3FlagShown = false;
+
+    function updateHint(stage) {
+      const hintText = document.getElementById("hintText");
+      const hintBtn = document.getElementById("hintBtn");
+
+      if (!hintText || !hintBtn) return;
+
+      hintText.textContent = hints[stage] || hints[1];
+      hintText.classList.add("closed");
+      hintBtn.textContent = "힌트 보기";
+      hintOpen = false;
+    }
+
+    function toggleHint() {
+      const hintText = document.getElementById("hintText");
+      const hintBtn = document.getElementById("hintBtn");
+
+      if (!hintText || !hintBtn) return;
+
+      hintOpen = !hintOpen;
+
+      if (hintOpen) {
+        hintText.classList.remove("closed");
+        hintBtn.textContent = "힌트 닫기";
+      } else {
+        hintText.classList.add("closed");
+        hintBtn.textContent = "힌트 보기";
+      }
+    }
+
+    function startGame() {
+      sessionStorage.setItem(GAME_STARTED_KEY, "true");
+      document.getElementById("startScreen").classList.add("hidden");
+      selectStage(1);
+      updateUI();
+    }
+
+    function goTitle() {
+      sessionStorage.removeItem(GAME_STARTED_KEY);
+      document.getElementById("startScreen").classList.remove("hidden");
+    }
+
+    function saveProgress() {
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+    }
+
+    function isUnlocked(stage) {
+      if (stage === 1) return true;
+      return progress[stage - 1];
+    }
+
+    function setMessage(text, type = "") {
+      const message = document.getElementById("message");
+      message.className = type ? `message ${type}` : "message";
+      message.textContent = text;
+    }
+
+    function showReward(flagText) {
+      return `<div class="wg-flag">FLAG : ${flagText}</div>`;
+    }
+
+    function selectStage(stage) {
+      if (!isUnlocked(stage)) return;
+
+      currentStage = stage;
+      localStorage.setItem(LAST_STAGE_KEY, String(stage));
+      selectedAnswer = null;
+      updateHint(stage);
+
+      document.querySelectorAll(".option").forEach((option) => {
+        option.classList.remove("selected");
+      });
+
+      const quizArea = document.getElementById("quizArea");
+      const wargameArea = document.getElementById("wargameArea");
+
+      document.getElementById("currentHud").textContent = `CURRENT : LV.${stage}`;
+      wargameArea.innerHTML = "";
+
+      if (stage === 1) {
+        document.getElementById("missionTitle").textContent = "LV.1 개념 문제";
+        document.getElementById("missionDesc").textContent =
+          "정답을 맞히면 LV.2 워게임이 열립니다.";
+        quizArea.classList.add("active");
+        wargameArea.classList.remove("active");
+        setMessage(progress[1]
+          ? "LV.1은 이미 클리어했습니다. 다시 풀어볼 수도 있습니다."
+          : "LV.1 문제를 먼저 풀어주세요.");
+      }
+
+      if (stage === 2) {
+        document.getElementById("missionTitle").textContent = "LV.2 권한 저장소";
+        document.getElementById("missionDesc").textContent =
+          "브라우저 저장소 값을 그대로 믿는 인증 로직을 우회하세요.";
+        quizArea.classList.remove("active");
+        wargameArea.classList.add("active");
+        renderStage2();
+        setMessage(progress[2]
+          ? "LV.2는 이미 클리어했습니다. 다시 시도할 수도 있습니다."
+          : "Local Storage에서 neonGateRole 값을 admin으로 바꿔보세요.");
+      }
+
+      if (stage === 3) {
+        document.getElementById("missionTitle").textContent = "LV.3 URL 키";
+        document.getElementById("missionDesc").textContent =
+          "URL key 인증으로 FLAG를 확인한 뒤 정답란에 입력하세요.";
+        quizArea.classList.remove("active");
+        wargameArea.classList.add("active");
+        renderStage3();
+        setMessage(progress[3]
+          ? "LV.3은 이미 클리어했습니다. 다시 시도할 수도 있습니다."
+          : "주소창 뒤에 ?key=admin을 붙이거나 입력칸에 넣은 뒤 CHECK URL KEY를 눌러보세요.");
+      }
+
+      if (stage === 4) {
+        document.getElementById("missionTitle").textContent = "LV.4 백업 로그";
+        document.getElementById("missionDesc").textContent =
+          "인코딩된 백업 토큰을 디코딩해 FLAG를 복구하세요.";
+        quizArea.classList.remove("active");
+        wargameArea.classList.add("active");
+        renderStage4();
+        setMessage(progress[4]
+          ? "LV.4는 이미 클리어했습니다. 다시 시도할 수도 있습니다."
+          : "Base64 토큰을 디코딩한 뒤 FLAG 입력칸에 넣어보세요.");
+      }
+
+      updateUI();
+    }
+
+    function chooseOption(index, button) {
+      selectedAnswer = index;
+
+      document.querySelectorAll(".option").forEach((option) => {
+        option.classList.remove("selected");
+      });
+
+      button.classList.add("selected");
+    }
+
+    function submitQuiz() {
+      if (currentStage !== 1) {
+        setMessage("현재 선택된 스테이지는 개념 문제가 아닙니다.", "fail");
+        return;
+      }
+
+      if (selectedAnswer === null) {
+        setMessage("답을 먼저 선택해야 합니다.", "fail");
+        return;
+      }
+
+      if (selectedAnswer === 0) {
+        progress[1] = true;
+        saveProgress();
+        updateUI();
+        setMessage("정답입니다. LV.1을 클리어했고, LV.2 워게임이 해금되었습니다.", "success");
+      } else {
+        setMessage("오답입니다. 사용자 입력값이 화면에 그대로 출력될 때 생기는 취약점을 다시 생각해보세요.", "fail");
+      }
+    }
+
+    function renderStage2() {
+      if (!localStorage.getItem(STORAGE_ROLE_KEY)) {
+        localStorage.setItem(STORAGE_ROLE_KEY, "guest");
+      }
+
+      const currentRole = localStorage.getItem(STORAGE_ROLE_KEY) || "guest";
+      const wargameArea = document.getElementById("wargameArea");
+
+      wargameArea.innerHTML = `
+        <div class="wg-card">
+          <span class="wg-kicker">LV.2 · STORAGE AUTH</span>
+          <h4>저장소의 role 값을 admin으로 바꾸고 FLAG를 확인하세요.</h4>
+          <p>클라이언트 저장소 값만 믿는 인증 로직이 왜 위험한지 확인하는 문제입니다.</p>
+          <div class="wg-console">
+            <div class="wg-row"><span>KEY</span><code>${STORAGE_ROLE_KEY}</code></div>
+            <div class="wg-row"><span>VALUE</span><code id="roleView">${currentRole}</code></div>
+          </div>
+        </div>
+
+        <button class="wg-btn" onclick="checkStage2Role()">CHECK ADMIN ROLE</button>
+
+        <div class="wg-status" id="stage2GateStatus">
+          ${currentRole === "admin"
+            ? "role 값이 admin입니다. CHECK ADMIN ROLE을 눌러 FLAG 확인 단계를 여세요."
+            : "아직 guest 권한입니다. Local Storage에서 neonGateRole 값을 admin으로 바꿔보세요."}
+        </div>
+
+        <div class="wg-form" id="stage2AnswerBox" style="display:${progress[2] ? "grid" : "none"};">
+          <label class="wg-label" for="level2Flag">팝업 또는 Console에서 확인한 FLAG 입력</label>
+          <input class="flag-input" id="level2Flag" type="text" autocomplete="off" placeholder="FLAG{...}" />
+          <button class="wg-btn" onclick="submitStage2Flag()">SUBMIT FLAG</button>
+        </div>
+
+        <div id="stage2Reward">${progress[2] ? showReward(LEVEL2_FLAG) : ""}</div>
+      `;
+    }
+
+    function checkStage2Role() {
+      const currentRole = localStorage.getItem(STORAGE_ROLE_KEY) || "guest";
+      const roleView = document.getElementById("roleView");
+      if (roleView) roleView.textContent = currentRole;
+
+      if (currentRole === "admin") {
+        revealStage2Flag(true);
+        setMessage("FLAG가 팝업과 Console에 출력되었습니다. 확인한 값을 정답란에 입력하세요.", "success");
+      } else {
+        setMessage("아직 guest 권한입니다. Application → Local Storage에서 neonGateRole 값을 admin으로 바꾸세요.", "fail");
+      }
+    }
+
+    function revealStage2Flag(showPopup) {
+      const answerBox = document.getElementById("stage2AnswerBox");
+      const statusBox = document.getElementById("stage2GateStatus");
+
+      console.log("[LV.2 FLAG]", LEVEL2_FLAG);
+
+      if (showPopup && !level2FlagShown) {
+        alert(`LV.2 FLAG
+${LEVEL2_FLAG}`);
+        level2FlagShown = true;
+      }
+
+      if (answerBox) answerBox.style.display = "grid";
+      if (statusBox) {
+        statusBox.textContent = "FLAG가 팝업과 개발자도구 Console에 출력되었습니다. 아래 정답란에 입력하세요.";
+      }
+    }
+
+    function submitStage2Flag() {
+      const answerInput = document.getElementById("level2Flag");
+      const answer = answerInput ? answerInput.value.trim() : "";
+
+      if (!answer) {
+        setMessage("팝업 또는 Console에서 확인한 FLAG를 먼저 입력해야 합니다.", "fail");
+        return;
+      }
+
+      if (answer === LEVEL2_FLAG) {
+        progress[2] = true;
+        saveProgress();
+        updateUI();
+        const reward = document.getElementById("stage2Reward");
+        if (reward) reward.innerHTML = showReward(LEVEL2_FLAG);
+        setMessage("정답입니다. LV.2 클리어! LV.3이 해금되었습니다.", "success");
+      } else {
+        setMessage("FLAG가 맞지 않습니다. 팝업이나 Console에 출력된 값을 다시 확인하세요.", "fail");
+      }
+    }
+
+    function renderStage3() {
+      const wargameArea = document.getElementById("wargameArea");
+
+      wargameArea.innerHTML = `
+        <div class="wg-card">
+          <span class="wg-kicker">LV.3 · URL PARAMETER</span>
+          <h4>주소창 또는 입력칸에 URL key를 넣어 숨겨진 FLAG를 확인하세요.</h4>
+          <p>힌트: 주소창 뒤에 <b>?key=값</b> 형태를 붙이거나 아래 입력칸에 직접 넣을 수 있습니다.</p>
+          <div class="wg-console">
+            <div class="wg-row"><span>CHECK</span><code>new URLSearchParams(...).get("key")</code></div>
+            <div class="wg-row"><span>NOW</span><code id="urlKeyView">입력 전</code></div>
+          </div>
+          <div class="wg-command">주소창 예시: /web_hacking_game_/?key=admin</div>
+        </div>
+
+        <div class="wg-form">
+          <label class="wg-label" for="level3UrlInput">URL 입력 또는 주소창 key 자동 반영</label>
+          <input class="flag-input" id="level3UrlInput" type="text" autocomplete="off" placeholder="?key=값 또는 index.html?key=값" />
+          <button class="wg-btn" onclick="checkStage3(false)">CHECK URL KEY</button>
+        </div>
+
+        <div class="wg-status" id="stage3GateStatus">
+          아직 문이 열리지 않았습니다. 주소창이나 입력칸에 ?key=admin 형태를 넣어보세요.
+        </div>
+
+        <div class="wg-form" id="stage3AnswerBox" style="display:${progress[3] ? "grid" : "none"};">
+          <label class="wg-label" for="level3Flag">팝업 또는 Console에서 확인한 FLAG 입력</label>
+          <input class="flag-input" id="level3Flag" type="text" autocomplete="off" placeholder="FLAG{...}" />
+          <button class="wg-btn" onclick="submitStage3()">SUBMIT FLAG</button>
+        </div>
+
+        <div id="stage3Reward">${progress[3] ? showReward(LEVEL3_FLAG) : ""}</div>
+      `;
+
+      fillStage3InputFromAddress();
+    }
+
+    function getStage3KeyFromInput(inputValue) {
+      const rawValue = (inputValue || "").trim();
+
+      if (!rawValue) return "";
+
+      try {
+        if (rawValue.startsWith("?")) {
+          return new URLSearchParams(rawValue).get("key") || "";
+        }
+
+        if (rawValue.includes("?")) {
+          const queryString = rawValue.split("?").slice(1).join("?");
+          return new URLSearchParams(queryString).get("key") || "";
+        }
+
+        if (rawValue.includes("=")) {
+          return new URLSearchParams(rawValue).get("key") || "";
+        }
+      } catch (error) {
+        return "";
+      }
+
+      return "";
+    }
+
+    function getStage3KeyFromAddress() {
+      try {
+        return new URLSearchParams(window.location.search).get("key") || "";
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function updateAddressPreview(inputValue) {
+      const rawValue = (inputValue || "").trim();
+
+      if (!rawValue) return;
+
+      let nextSearch = "";
+
+      if (rawValue.startsWith("?")) {
+        nextSearch = rawValue;
+      } else if (rawValue.includes("?")) {
+        nextSearch = "?" + rawValue.split("?").slice(1).join("?");
+      } else if (rawValue.includes("=")) {
+        nextSearch = "?" + rawValue;
+      }
+
+      if (nextSearch) {
+        history.replaceState(null, "", window.location.pathname + nextSearch);
+      }
+    }
+
+    function checkStage3(isAutoCheck = false) {
+      const input = document.getElementById("level3UrlInput");
+      const inputValue = input ? input.value.trim() : "";
+      const addressValue = window.location.search || "";
+      const rawValue = inputValue || addressValue;
+      const key = getStage3KeyFromInput(rawValue) || getStage3KeyFromAddress();
+      const urlKeyView = document.getElementById("urlKeyView");
+
+      if (!rawValue.trim()) {
+        if (urlKeyView) urlKeyView.textContent = "입력 전";
+        setMessage("주소창 뒤에 ?key=값을 붙이거나 URL 입력칸에 ?key=값을 입력해야 합니다.", "fail");
+        return;
+      }
+
+      if (input && !inputValue && addressValue) {
+        input.value = addressValue;
+      }
+
+      updateAddressPreview(rawValue);
+
+      if (urlKeyView) urlKeyView.textContent = key || "없음";
+
+      if (key === "admin") {
+        revealStage3Flag(true);
+        setMessage("FLAG가 팝업과 Console에 출력되었습니다. 확인한 값을 정답란에 입력하세요.", "success");
+      } else {
+        setMessage("아직 문이 열리지 않았습니다. key 값을 다시 확인하세요.", "fail");
+      }
+    }
+
+    function revealStage3Flag(showPopup) {
+      const answerBox = document.getElementById("stage3AnswerBox");
+      const statusBox = document.getElementById("stage3GateStatus");
+
+      console.log("[LV.3 FLAG]", LEVEL3_FLAG);
+
+      if (showPopup && !level3FlagShown) {
+        alert(`LV.3 FLAG\n${LEVEL3_FLAG}`);
+        level3FlagShown = true;
+      }
+
+      if (answerBox) answerBox.style.display = "grid";
+      if (statusBox) {
+        statusBox.textContent = "FLAG가 팝업과 개발자도구 Console에 출력되었습니다. 아래 정답란에 입력하세요.";
+      }
+    }
+
+    function submitStage3() {
+      const answerInput = document.getElementById("level3Flag");
+      const answer = answerInput ? answerInput.value.trim() : "";
+
+      if (!answer) {
+        setMessage("팝업 또는 Console에서 확인한 FLAG를 먼저 입력해야 합니다.", "fail");
+        return;
+      }
+
+      if (answer === LEVEL3_FLAG) {
+        progress[3] = true;
+        saveProgress();
+        updateUI();
+        const reward = document.getElementById("stage3Reward");
+        if (reward) reward.innerHTML = showReward(LEVEL3_FLAG);
+        setMessage("정답입니다. LV.3 클리어! LV.4가 해금되었습니다.", "success");
+      } else {
+        setMessage("FLAG가 맞지 않습니다. 팝업이나 Console에 출력된 값을 다시 확인하세요.", "fail");
+      }
+    }
+
+    function renderStage4() {
+      const wargameArea = document.getElementById("wargameArea");
+
+      wargameArea.innerHTML = `
+        <div class="wg-card">
+          <span class="wg-kicker">LV.4 · BACKUP DECODE</span>
+          <h4>백업 토큰을 디코딩해서 FLAG를 복구하세요.</h4>
+          <p>개발자가 인코딩된 값을 프론트엔드에 남겨두었습니다. Base64는 숨김이 아니라 변환입니다.</p>
+          <div class="token-box">${LEVEL4_TOKEN}</div>
+          <div class="wg-command">Console 예시: atob("${LEVEL4_TOKEN}")</div>
+        </div>
+        <div class="wg-form">
+          <label class="wg-label" for="level4Flag">FLAG 입력</label>
+          <input class="flag-input" id="level4Flag" type="text" autocomplete="off" placeholder="FLAG{...}" />
+          <button class="wg-btn" onclick="submitStage4()">SUBMIT FLAG</button>
+        </div>
+        <div id="stage4Reward">${progress[4] ? showReward(LEVEL4_FLAG) : ""}</div>
+      `;
+    }
+
+    function submitStage4() {
+      const answer = document.getElementById("level4Flag").value.trim();
+
+      if (!answer) {
+        setMessage("FLAG를 먼저 입력해야 합니다.", "fail");
+        return;
+      }
+
+      if (answer === LEVEL4_FLAG) {
+        progress[4] = true;
+        saveProgress();
+        updateUI();
+        document.getElementById("stage4Reward").innerHTML = showReward(LEVEL4_FLAG);
+        setMessage("백업 로그 복구 성공입니다. LV.4 클리어! 모든 레벨을 완료했습니다.", "success");
+      } else {
+        setMessage("FLAG가 맞지 않습니다. Base64 토큰을 다시 디코딩해보세요.", "fail");
+      }
+    }
+
+    function updateUI() {
+      let clearCount = 0;
+
+      for (let i = 1; i <= TOTAL_STAGES; i++) {
+        if (progress[i]) clearCount++;
+
+        const stage = document.getElementById(`stage${i}`);
+        const status = document.getElementById(`status${i}`);
+        const button = document.getElementById(`stageBtn${i}`);
+
+        if (!stage || !status || !button) continue;
+
+        if (isUnlocked(i)) {
+          stage.classList.remove("locked");
+          button.disabled = false;
+          button.textContent = progress[i] ? `REPLAY LV.${i}` : `PLAY LV.${i}`;
+          status.textContent = progress[i] ? "● CLEAR" : "● OPEN";
+        } else {
+          stage.classList.add("locked");
+          button.disabled = true;
+          button.textContent = "LOCKED";
+          status.textContent = "● LOCKED";
+        }
+
+        if (progress[i]) {
+          stage.classList.add("clear");
+        } else {
+          stage.classList.remove("clear");
+        }
+
+        if (isUnlocked(i) && !progress[i]) {
+          stage.classList.add("active");
+        } else {
+          stage.classList.remove("active");
+        }
+      }
+
+      document.getElementById("clearHud").textContent = `CLEAR : ${clearCount} / ${TOTAL_STAGES}`;
+    }
+
+    function resetGame() {
+      progress = {
+        1: false,
+        2: false,
+        3: false,
+        4: false
+      };
+
+      selectedAnswer = null;
+      level2FlagShown = false;
+      level3FlagShown = false;
+      localStorage.setItem(STORAGE_ROLE_KEY, "guest");
+      saveProgress();
+      updateUI();
+      selectStage(1);
+      updateHint(1);
+
+      document.querySelectorAll(".option").forEach((option) => {
+        option.classList.remove("selected");
+      });
+
+      setMessage("게임 진행도가 초기화되었습니다. LV.1부터 다시 시작하세요.");
+    }
+
+    function getHighestUnlockedStage() {
+      for (let i = TOTAL_STAGES; i >= 1; i--) {
+        if (isUnlocked(i)) return i;
+      }
+      return 1;
+    }
+
+    function hasStage3QueryInAddress() {
+      return new URLSearchParams(window.location.search).has("key");
+    }
+
+    function fillStage3InputFromAddress() {
+      const input = document.getElementById("level3UrlInput");
+      const urlKeyView = document.getElementById("urlKeyView");
+
+      if (!input || !window.location.search) return;
+
+      input.value = window.location.search;
+
+      const key = getStage3KeyFromAddress();
+      if (urlKeyView) urlKeyView.textContent = key || "없음";
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      updateHint(1);
+      updateUI();
+
+      const hasKeyInAddress = hasStage3QueryInAddress();
+      const lastStage = Number(localStorage.getItem(LAST_STAGE_KEY) || "1");
+
+      if (hasKeyInAddress) {
+        sessionStorage.setItem(GAME_STARTED_KEY, "true");
+        document.getElementById("startScreen").classList.add("hidden");
+
+        if (isUnlocked(3)) {
+          selectStage(3);
+          fillStage3InputFromAddress();
+          setMessage("주소창의 key 값이 LV.3 입력칸에 들어갔습니다. CHECK URL KEY를 눌러 FLAG를 확인하세요.");
+        } else {
+          const stageToOpen = getHighestUnlockedStage();
+          selectStage(stageToOpen);
+          setMessage("LV.3은 아직 잠겨 있습니다. 앞 레벨을 먼저 클리어한 뒤 URL 키 문제를 풀 수 있습니다.", "fail");
+        }
+
+        return;
+      }
+
+      if (sessionStorage.getItem(GAME_STARTED_KEY) === "true") {
+        document.getElementById("startScreen").classList.add("hidden");
+        const stageToOpen = isUnlocked(lastStage) ? lastStage : getHighestUnlockedStage();
+        selectStage(stageToOpen);
+        return;
+      }
+
+      document.getElementById("startScreen").classList.remove("hidden");
+    });
+
+    updateUI();
+  </script>
+</body>
+</html>
